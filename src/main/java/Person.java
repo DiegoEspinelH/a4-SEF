@@ -49,8 +49,14 @@ public class Person {
 	public boolean getLicenceStatus(){
 		return this.isSuspended;
 	}
-	public void setDemeritPoints(HashMap<Date, Integer> pointsList){
-
+	public void setDemeritPoints(String dateString, int demeritPoints){
+		SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+		try {
+			Date date = sdf.parse(dateString);
+			this.demeritPoints.put(date, demeritPoints);
+		} catch (Exception e) {
+			System.out.println("Invalid date format.");
+		}
 	}
 	public HashMap<Date, Integer> getDemeritPoints(){
 		return this.demeritPoints;
@@ -210,7 +216,6 @@ public class Person {
 		
 		if(this.isValidDateFormat(date)){
 			try {
-				System.out.println("custom valid date format checked and passed");
 				Date parsedDate = sdf.parse(date);
 				if(parsedDate.after(twoYearsAgo) && parsedDate.before(now)){
 					//it is in range within two years of current date
@@ -222,7 +227,7 @@ public class Person {
 				}
 
         	} catch (ParseException e) {
-            	System.out.println("Invalid date format. Please use dd-MM-yyyy.");
+				//parse error
 				return false;
         	}
 		}else{
@@ -300,7 +305,7 @@ public class Person {
 		}
 		
 		//2)
-		if(!birthdate.equals(newBirthdate)) {
+		if(!prevBirthdate.equals(newBirthdate)) {
 			if(!prevID.equals(newID) || !prevName.equals(newName) || !prevAddress.equals(newAddress)) {
 				System.out.println("Your birthdate is different, no other detail can be updated.");
 				return false;
@@ -314,8 +319,7 @@ public class Person {
 				return false;
 			}
 		}
-		
-		
+	
 //		All conditions to add person must be considered.
 //		1) under 18s cannot change their address
 //		2) If birthday is to be changed, no other detail can be changed.[DONE]
@@ -328,16 +332,13 @@ public class Person {
 	}
 	
 	public String addDemeritPoints() {
-		//create a calendar object 
-		Calendar cal = Calendar.getInstance();
-		Date now = new Date();
-		cal.setTime(now);
-
-		//simple date format to write dates in a specified format
-		//SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
-
+		
 		String dateOne = "12-05-202";
 		System.out.println(this.isWithinTwoYears(dateOne));
+
+		int offenceOne = 3;
+
+
 
 //		TODO: function adds demerit points for a given person in a .txt file
 //		1) format of the date of offense should be DD-MM-YYYY
