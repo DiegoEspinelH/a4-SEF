@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Calendar;
 import java.util.Date;
 import java.text.ParseException;
@@ -17,6 +18,8 @@ public class Person {
 		this.firstname = firstname;
 		this.address = address;
 		this.birthdate = birthdate;
+		this.demeritPoints = new HashMap<>();
+		this.isSuspended = false;
 	}
 	
 	public void setID(String newID) {
@@ -53,9 +56,12 @@ public class Person {
 		SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
 		try {
 			Date date = sdf.parse(dateString);
+			System.out.println(date);
+			System.out.println("set demerit points date format correct");
 			this.demeritPoints.put(date, demeritPoints);
+			System.out.println("successfully added to hashmap");
 		} catch (Exception e) {
-			System.out.println("Invalid date format.");
+			System.out.println("Invalid date format in set demerit points.");
 		}
 	}
 	public HashMap<Date, Integer> getDemeritPoints(){
@@ -92,7 +98,7 @@ public class Person {
 	}
 
 	public boolean isValidID(String id){
-
+		//check all assignment conditions
 		return isDigit2and9(id.charAt(0)) && isDigit2and9(id.charAt(1)) && isSpecialChar3to8(id) && isUppercaseLastTwo(id);
 	}
 	public boolean isValidAddressFormat(String address) {
@@ -331,13 +337,19 @@ public class Person {
 		return toUpdate.addPerson();
 	}
 	
-	public String addDemeritPoints() {
-		
-		String dateOne = "12-05-202";
-		System.out.println(this.isWithinTwoYears(dateOne));
+	public String addDemeritPoints(String offenceDate, int demeritPoints) {
+		SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
 
-		int offenceOne = 3;
-
+		if(this.isWithinTwoYears(offenceDate)){
+			System.out.println("is within two years");
+			this.setDemeritPoints(offenceDate, demeritPoints);
+			System.out.println("set demerit points end reached");
+		}
+		// for (Map.Entry<Date, Integer> entry : this.demeritPoints.entrySet()) {
+        //         String formattedDate = sdf.format(entry.getKey());
+        //         int points = entry.getValue();
+        //         System.out.println(formattedDate + ": " + points);
+        //     }
 
 
 //		TODO: function adds demerit points for a given person in a .txt file
@@ -346,7 +358,7 @@ public class Person {
 //		3) If age < 21, isSuspended set to true if demerit points total within 2 years > 6
 //		if age >=21, isSuspended sets to true if within 2 years deperit points > 12
 //		Demerit points should then be inserted in a .txt if conditions met. returns "success", otherwise, returns "Failed"
-		return "Success";
+		return "";
 	}
 
 
@@ -370,7 +382,18 @@ public class Person {
 		// System.out.println(badExample3.addPerson());
 		// System.out.println(badExample4.addPerson());
 		// System.out.println(badExample5.addPerson());
-		System.out.println(example.addDemeritPoints());
+		String offenceDate1 = "23-04-2025";
+		String offenceDate2 = "12-03-2024";
+		int demerit1 = 3;
+		int demerit2 = 4;
+		System.out.println(example.addDemeritPoints(offenceDate1, demerit1));
+		System.out.println(example.addDemeritPoints(offenceDate2, demerit2));
+		SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+		for (Map.Entry<Date, Integer> entry : example.getDemeritPoints().entrySet()) {
+                String formattedDate = sdf.format(entry.getKey());
+                int points = entry.getValue();
+                System.out.println(formattedDate + ": " + points);
+            }
 
 	}
 }
