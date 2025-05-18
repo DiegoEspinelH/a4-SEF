@@ -4,6 +4,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
@@ -29,8 +30,9 @@ public class Person {
 		System.out.println(this.address);
 		System.out.println(this.birthdate);
 	}
-	public void writeToFile(){
+	public void writeDetailsToFile(){
 		try{
+			//created a buffered writer so it makes a "paragraph" instead of pushing line by line
 			BufferedWriter writer = new BufferedWriter(new FileWriter("person.txt"));
 			String id = this.getID();
 			String name = this.getName();
@@ -44,13 +46,32 @@ public class Person {
 			writer.newLine();
 			writer.write(birthdate);
 			writer.newLine();
+			writer.write("Licence suspended? " + this.getLicenceStatus());
+			writer.newLine();
 			writer.close();
 			System.out.println("Person written to file success!");
 		}catch (Exception e){
 			System.out.println("Error writing file!");
 		}
 	}
-	
+	public void writeDemeritPointsToFile(){
+
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter("person.txt"))) {
+			//stantiated the date format to write in the .txt file
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); 
+			//for every entry in the person's demerit points hashmap
+            for (Map.Entry<Date, Integer> entry : this.getDemeritPoints().entrySet()) {
+                //write each entry in the format Date: Integer
+                writer.write(sdf.format(entry.getKey()) + ": " + entry.getValue());
+                //move to the next line
+				writer.newLine();  
+            }
+            System.out.println("Demerit points successfully added.");
+        } catch (IOException e) {
+			//error
+        }
+	}
+	//setter methods:
 	public void setID(String newID) {
 		this.personID = newID;
 	}
@@ -63,6 +84,23 @@ public class Person {
 	public void setBirthdate(String newBirthdate) {
 		this.birthdate = newBirthdate;
 	}
+	public void setSuspended(boolean value){
+		this.isSuspended = value;
+	}
+	
+	public void setDemeritPoints(String dateString, int demeritPoints){
+		SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+		try {
+			//parse the date string to a Date object
+			Date date = sdf.parse(dateString);
+			//add to the person's demerit ponts in format <Date, Integer>
+			this.demeritPoints.put(date, demeritPoints);
+		} catch (Exception e) {
+			System.out.println("Invalid date format in set demerit points.");
+		}
+	}
+	
+	//getter methods:
 	public String getID() {
 		return this.personID;
 	}
@@ -75,39 +113,32 @@ public class Person {
 	public String getBirthdate() {
 		return this.birthdate;
 	}
-	public void setSuspended(boolean value){
-		this.isSuspended = value;
-	}
 	public boolean getLicenceStatus(){
 		return this.isSuspended;
-	}
-	public void setDemeritPoints(String dateString, int demeritPoints){
-		SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
-		try {
-			Date date = sdf.parse(dateString);
-			this.demeritPoints.put(date, demeritPoints);
-		} catch (Exception e) {
-			System.out.println("Invalid date format in set demerit points.");
-		}
 	}
 	public HashMap<Date, Integer> getDemeritPoints(){
 		return this.demeritPoints;
 	}
 	
+
 	public boolean isDigit2and9(char c) {
 		//check if passed character is a digit between 2 and 9
 		return c >= '2' && c <= '9';
 	}
 
 	public boolean isSpecialChar3to8(String id){
+		//make a string containing special characters
 		String specialChars = "!@#$%^&-_+=<>/";
 		int counter = 0;
 		for(int i = 2; i <=7; i++){
+			//check if a character matches with special characters string at given indexes
 			char c = id.charAt(i);
+			//if match, add to counter
 			if(specialChars.indexOf(c) != -1){
 				counter++;
 			}
 		}
+		//check if there is 2 or more special chars in ID
 		if (counter >= 2) {
 			return true;	
 		}
@@ -119,6 +150,7 @@ public class Person {
 	}
 
 	public boolean isUppercaseLastTwo(String id){
+		//check if last two characters are uppercase
 		return Character.isUpperCase(id.charAt(8)) && Character.isUpperCase(id.charAt(9)) ;
 	}
 
@@ -153,21 +185,16 @@ public class Person {
 		//check validity of parts
 		if(!streetNum.matches("\\d+")) {
 			//if streetNum is not a digit
-			System.out.println("stret number expected in first position");
 			return false;
 		}
 		if(!state.equals("Victoria")) {
 			//state must be Victoria
-			System.out.println(state);
-			System.out.println("Victoria state not match");
 			return false;
 		}
 		if(streetName.isEmpty() && city.isEmpty() && country.isEmpty()) {
-			System.out.println("street, city and country are empty");
 			//Every other part needs to have a value
 			return false;
 		}
-		
 		//if we reach this line, all checks have passed, so return true
 		return true;
 		
@@ -176,7 +203,7 @@ public class Person {
 	public boolean isValidDateFormat(String date) {
 		
 		if(date.isEmpty()) {
-			System.out.println("date is empty");
+			//check if date is empty
 			return false;
 		}
 		String[] parts = date.split("\\-");
@@ -193,7 +220,6 @@ public class Person {
 		
 		if(day.isEmpty() || month.isEmpty() || year.isEmpty()) {
 			//if there is no values in any of the parts, invalid format
-			System.out.println("date is empty");
 			return false;
 		}
 		
@@ -202,33 +228,27 @@ public class Person {
 		int yearNum = Integer.parseInt(year);
 		if(monthNum < 1 || monthNum > 12) {
 			//invalid month
-			System.out.println("month invalid");
 			return false;
 		}
 		
 		if(monthNum == 2 && (dayNum < 1 || dayNum > 28)){
 			//check for february, ignore leap years
-			System.out.println("february checked invalid day");
 			return false;
 		}
 		if((monthNum == 1 || monthNum == 3 || monthNum == 5 || monthNum == 7 || monthNum == 8 || monthNum == 10 || monthNum == 12) && (dayNum < 1 || dayNum > 31)) {
 			//check for months with 31 days
-			System.out.println("31 day months checked invalid day");
 			return false;
 		}
 		if((monthNum == 4 || monthNum == 6 || monthNum == 9 || monthNum == 11) && (dayNum < 1 || dayNum > 30)) {
 			//check for months with 30 days
-			System.out.println("30 day months checked invalid day");
 			return false;
 		}
 		if(yearNum > 2025 || yearNum < 1900) {
 			//check for values greater than current year
-			System.out.println("year is future or too far back");
 			return false;
 		}
 		
 		//if this line is reached, all checks passed
-		//System.out.println("date format correct");
 		return  true;
 	}
 
@@ -247,6 +267,7 @@ public class Person {
 		
 		if(this.isValidDateFormat(date)){
 			try {
+				//parsed date turns a string to a Date object if format is as specified with 'sdf'
 				Date parsedDate = sdf.parse(date);
 				if(parsedDate.after(twoYearsAgo) && parsedDate.before(now)){
 					//it is in range within two years of current date
@@ -274,16 +295,32 @@ public class Person {
 		int yearNum = Integer.parseInt(year);
 		int res = 2025 - yearNum;
 		if(res < 18) {
-			System.out.println("under 18: " + res);
+			//if person is under 18
 			return true;
 		}
 		else {
-			System.out.println("over 18");
+			//if person is over 18
+			return false;
+		}
+		
+	}
+	public boolean isUnder21(String date) {
+		String[] parts = date.split("\\-");
+		String year = parts[2];
+		int yearNum = Integer.parseInt(year);
+		int res = 2025 - yearNum;
+		if(res < 21) {
+			//if person is under 21
+			return true;
+		}
+		else {
+			//if person is over 21
 			return false;
 		}
 		
 	}
 	public boolean isFirstDigitEven(String id) {
+		//check if the remainder of id / 2 is 0, meaning it is even
 		if((id.charAt(0)%2) == 0 ) {
 			return true;
 		}
@@ -293,30 +330,26 @@ public class Person {
 	}
 	
 	public boolean addPerson() {
-		//TODO: method adds information about a person to a .txt file
-		//After meeting conditions, write to a .txt file and return true.
-		//otherwise, don't write to file and return false.
 		boolean canAddPerson = false;
 		if(this.personID.length() == 10) {
+			//if ID length is strictly 10, compute
 			if(this.getName().isEmpty()){
-				System.out.println("name is empty");
+				//check if name is empty
 				return canAddPerson;
 			}
 			if(isValidID(this.getID()) && isValidAddressFormat(this.getAddress()) && isValidDateFormat(this.getBirthdate()) ) {
-				//TODO: write to a file
 				canAddPerson = true;
-				System.out.println("");
-				System.out.println("Person can be added: " + canAddPerson);
-				this.writeToFile();
+				//write person's details to the file
+				this.writeDetailsToFile();
 				return canAddPerson;
 			}
 		}
-		System.out.println("Not all checks passed, cannot add person: " + canAddPerson);
+		//if this line is reached, canAddPerson is false and person is not added
 		return canAddPerson;
-		
 	}	
 	public boolean canChangeAddress(){
 		if(this.isUnderAge(this.getBirthdate())) {
+			//if under 18, cannot change address
 			return false;
 		}
 		else{
@@ -324,14 +357,20 @@ public class Person {
 		}
 	}
 	public boolean wasBirthdateChanged(String newBirthdate){
+		//check if current birthdate is the same as passed
 		if(this.getBirthdate().equals(newBirthdate)) {
+			//if both are equal, means it was not changed, returns false
 			return false;
 		}else{
+			//otherwise, it was changed and return true
 			return true;
 		}
 	}
+
 	public boolean canChangeID(){
+		//check if first digit of person's ID is even
 		if(this.isFirstDigitEven(this.getID()) == true) {
+			//if even, ID cannot be changed
 			return false;
 		}
 		else{
@@ -340,78 +379,101 @@ public class Person {
 	}
 	
 	public boolean updatePersonalDetails(String newID, String newName, String newAddress, String newBirthdate ) {
-//		TODO: Update all details of a person in a .txt file
-		
-		//TODO: get person details from .txt file
-//		All conditions to add person must be considered.
-//		1) under 18s cannot change their address
-//		2) If birthday is to be changed, no other detail can be changed.[DONE]
-//		3) if personID[0] is even, ID cannot be changed [DONE]
-//		After meeting all conditions the details should be updated in the .txt file and funtion returns true
-//		otherwise, don't update and return false
-		
+		//if birthday was changed, compute
 		if(this.wasBirthdateChanged(newBirthdate)){
+			//check if any other detail was changed
 			if(!this.getID().equals(newID) || !this.getName().equals(newName) || !this.getAddress().equals(newAddress)) {
-				System.out.println("Your birthdate is different, no other detail can be updated.");
+				//if anything besides the birthdate was changed, change nothing and exit
 				return false;
 			}else{
+				//otherwise, only birthdate was changed and update birthdate
 				this.setBirthdate(newBirthdate);
 			}
-		}else{
+		}else{ //if birthdate was not changed
+			//check if ID was modified
 			if(!this.getID().equals(newID) && !this.canChangeID() ){
-				System.out.println("Your ID cannot be modified.");
+				//if ID was modified and cannot be changed, change nothing and exit
 				return false;
 			}else{
+				//otherwise, update ID
 				this.setID(newID);
 			}
+			//check if address was changed, and if person is allowed to change address
+			if(!this.getAddress().equals(newAddress) && !this.canChangeAddress()) {
+				//if it was changed, and person is underage, change nothing and exit
+				return false;
+			}
+			else{//otherwise, after all checks, can change address and update name if required
+				//if name is the same, still update
+				this.setName(newName);
+				this.setAddress(newAddress);
+			}
 		}
-		if(!this.getAddress().equals(newAddress) && !this.canChangeAddress()) {
-			System.out.println("Under 18s cannot change their addresses");
-			return false;
-		}
-		else{
-			this.setName(newName);
-			this.setAddress(newAddress);
-		}
-		this.setName(newName);
-		
-		//Perform all checks to add person, and add the new person to a .txt file
+		//Perform all checks to add person, and add the updated person to the .txt file
 		return this.addPerson();
+	}
+	public boolean isValidDemerit(int demerit){
+		//demerit points should only be integers, within 1 and 6 inclusive
+		return (demerit > 0 && demerit <= 6);
 	}
 	
 	public String addDemeritPoints(String offenceDate, int demeritPoints) {
 		SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
-		
-		this.setDemeritPoints(offenceDate, demeritPoints);
-
-		if(this.isWithinTwoYears(offenceDate)){
-			//System.out.println("is within two years");
+		//check if demerit points are valid
+		if(!isValidDemerit(demeritPoints)){
+			//if outside range, exit and return Failed
+			return "Failed";
 		}
-		// for (Map.Entry<Date, Integer> entry : this.demeritPoints.entrySet()) {
-        //         String formattedDate = sdf.format(entry.getKey());
-        //         int points = entry.getValue();
-        //         System.out.println(formattedDate + ": " + points);
-        //     }
+		if(!isValidDateFormat(offenceDate)){
+			//check if date is written correctly
+			return "Failed";
+		}else{
+			//add demerit points to the persons demerit point map
+			this.setDemeritPoints(offenceDate, demeritPoints);
+			
+			//create a new hashmap to check if licence is going to be suspended
+			HashMap<Date, Integer> withinTwo = new HashMap<>();
+			
+			//for every entry in the person's demerit points, check if it is within two years of current date
+			for (Map.Entry<Date, Integer> entry : this.demeritPoints.entrySet()) {
 
-
-//		TODO: function adds demerit points for a given person in a .txt file
-//		1) format of the date of offense should be DD-MM-YYYY
-//		2) demerit points should be int between 1-6
-//		3) If age < 21, isSuspended set to true if demerit points total within 2 years > 6
-//		if age >=21, isSuspended sets to true if within 2 years deperit points > 12
-//		Demerit points should then be inserted in a .txt if conditions met. returns "success", otherwise, returns "Failed"
-		return "";
+				String entryDateStr = sdf.format(entry.getKey());
+				//if within two years, add to checker hashmap
+				if (this.isWithinTwoYears(entryDateStr)) {
+					withinTwo.put(entry.getKey(), entry.getValue());
+				}
+			}
+			
+			//summation of points within two years, initialized at 0
+			int pointsWithinTwoYears = 0;
+			for (int points : withinTwo.values()) {
+				//add all points
+				pointsWithinTwoYears += points;
+			}
+			if(this.isUnder21(this.getBirthdate())){
+				//if person is under 21, check for a maximum of 6 demerit points
+				if(pointsWithinTwoYears > 6){
+					//if over, suspend
+					this.setSuspended(true);
+				}
+			}else{ //check for people over 21 years of age
+				//over 21s have a limit of 21 demerit points
+				if(pointsWithinTwoYears > 12){
+					//if over, suspend
+					this.setSuspended(true);
+				}
+			}
+			//if this line is reached, all checks were done
+			//write to the txt file the valid points and date of occurrences
+			this.writeDemeritPointsToFile();
+			return "Success!";
+		}
 	}
 
 
 	public static void main(String[] args) {
-		//good input should return true
-		Person example = new Person("36d#w@fvRQ", "mat", "23|malvern road|malvern|Victoria|Australia", "23-05-2009");
-		example.addPerson();
-
-		example.printPersonalDetails();
-		System.out.println("");
-		example.updatePersonalDetails( "26d#w@fvRQ", "john", "23|malvern road|malvern|Victoria|Australia", "23-05-2009");
-		example.printPersonalDetails();
+		//Code was written in main to make developing checks
+		//As checks were implemented, the code was deleted
+		//TODO: write tests to check conditions
 	}
 }
