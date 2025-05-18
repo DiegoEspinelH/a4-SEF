@@ -21,6 +21,12 @@ public class Person {
 		this.demeritPoints = new HashMap<>();
 		this.isSuspended = false;
 	}
+	public void printPersonalDetails(){
+		System.out.println(this.personID);
+		System.out.println(this.firstname);
+		System.out.println(this.address);
+		System.out.println(this.birthdate);
+	}
 	
 	public void setID(String newID) {
 		this.personID = newID;
@@ -56,10 +62,7 @@ public class Person {
 		SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
 		try {
 			Date date = sdf.parse(dateString);
-			System.out.println(date);
-			System.out.println("set demerit points date format correct");
 			this.demeritPoints.put(date, demeritPoints);
-			System.out.println("successfully added to hashmap");
 		} catch (Exception e) {
 			System.out.println("Invalid date format in set demerit points.");
 		}
@@ -237,6 +240,7 @@ public class Person {
 				return false;
         	}
 		}else{
+			//invalid date format
 			return false;
 		}
 
@@ -246,11 +250,14 @@ public class Person {
 		String[] parts = date.split("\\-");
 		String year = parts[2];
 		int yearNum = Integer.parseInt(year);
-		if((2025 - yearNum) < 18) {
-			return false;
+		int res = 2025 - yearNum;
+		if(res < 18) {
+			System.out.println("under 18: " + res);
+			return true;
 		}
 		else {
-			return true;
+			System.out.println("over 18");
+			return false;
 		}
 		
 	}
@@ -283,49 +290,34 @@ public class Person {
 		return false;
 		
 	}	
-			
+	public boolean canChangeAddress(){
+		if(this.isUnderAge(this.getBirthdate())) {
+			return false;
+		}
+		else{
+			return true;
+		}
+	}
+	public boolean wasBirthdateChanged(String newBirthdate){
+		if(this.getBirthdate().equals(newBirthdate)) {
+			return false;
+		}else{
+			return true;
+		}
+	}
+	public boolean canChangeID(){
+		if(this.isFirstDigitEven(this.getID()) == true) {
+			return false;
+		}
+		else{
+			return true;
+		}
+	}
 	
-	public boolean updatePersonalDetails(Person prevDetails) {
+	public boolean updatePersonalDetails(String newID, String newName, String newAddress, String newBirthdate ) {
 //		TODO: Update all details of a person in a .txt file
 		
 		//TODO: get person details from .txt file
-		//set variable names to details retrieved from file.
-		String prevID = prevDetails.getID();
-		String prevName = prevDetails.getName();
-		String prevAddress = prevDetails.getAddress();
-		String prevBirthdate = prevDetails.getBirthdate();
-		Person toUpdate = new Person(prevID, prevName, address, birthdate);
-		
-		//get new details like a form. If same details, get them anyway.
-		String newID = "";
-		String newName = "";
-		String newAddress = "";
-		String newBirthdate = "";
-		
-		//1)
-		if(toUpdate.isUnderAge(toUpdate.getBirthdate())) {
-			if(!address.equals(newAddress)) {
-				System.out.println("You are under 18, you cannot change your address.");
-				return false;
-			}
-		}
-		
-		//2)
-		if(!prevBirthdate.equals(newBirthdate)) {
-			if(!prevID.equals(newID) || !prevName.equals(newName) || !prevAddress.equals(newAddress)) {
-				System.out.println("Your birthdate is different, no other detail can be updated.");
-				return false;
-			}
-		}
-		
-		//3)
-		if(toUpdate.isFirstDigitEven(toUpdate.getID()) == true) {
-			if(!prevID.equals(newID)) {
-				System.out.println("Your ID cannot be modified.");
-				return false;
-			}
-		}
-	
 //		All conditions to add person must be considered.
 //		1) under 18s cannot change their address
 //		2) If birthday is to be changed, no other detail can be changed.[DONE]
@@ -333,17 +325,42 @@ public class Person {
 //		After meeting all conditions the details should be updated in the .txt file and funtion returns true
 //		otherwise, don't update and return false
 		
+		if(this.wasBirthdateChanged(newBirthdate)){
+			if(!this.getID().equals(newID) || !this.getName().equals(newName) || !this.getAddress().equals(newAddress)) {
+				System.out.println("Your birthdate is different, no other detail can be updated.");
+				return false;
+			}else{
+				this.setBirthdate(newBirthdate);
+			}
+		}else{
+			if(!this.getID().equals(newID) && !this.canChangeID() ){
+				System.out.println("Your ID cannot be modified.");
+				return false;
+			}else{
+				this.setID(newID);
+			}
+		}
+		if(!this.getAddress().equals(newAddress) && !this.canChangeAddress()) {
+			System.out.println("Under 18s cannot change their addresses");
+			return false;
+		}
+		else{
+			this.setName(newName);
+			this.setAddress(newAddress);
+		}
+		this.setName(newName);
+		
 		//Perform all checks to add person, and add the new person to a .txt file
-		return toUpdate.addPerson();
+		return this.addPerson();
 	}
 	
 	public String addDemeritPoints(String offenceDate, int demeritPoints) {
 		SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+		
+		this.setDemeritPoints(offenceDate, demeritPoints);
 
 		if(this.isWithinTwoYears(offenceDate)){
-			System.out.println("is within two years");
-			this.setDemeritPoints(offenceDate, demeritPoints);
-			System.out.println("set demerit points end reached");
+			//System.out.println("is within two years");
 		}
 		// for (Map.Entry<Date, Integer> entry : this.demeritPoints.entrySet()) {
         //         String formattedDate = sdf.format(entry.getKey());
@@ -364,36 +381,11 @@ public class Person {
 
 	public static void main(String[] args) {
 		//good input should return true
-		Person example = new Person("26d#w@fvRQ", "john", "23|malvern road|malvern|Victoria|Australia", "23-05-1990");
-		//incorrect input: name is empty
-		Person badExample1 = new Person("26d###svRQ", "", "23|malvern road|malvern|Victoria|Australia", "23-05-1990");
-		//incorrect input: street number is not digit
-		Person badExample2 = new Person("20d###svRQ", "john", "twentythree|malvern road|malvern|Victoria|Australia", "23-05-1990");
-		//incorrect input: no special char
-		Person badExample3 = new Person("26sdfsvRQ", "john", "23|malvern road|malvern|Victoria|Australia", "23-05-1990");
-		//incorrect input: incorrect id length
-		Person badExample4 = new Person("26d###vrQ", "john", "23|malvern road|malvern|Victoria|Australia", "23-05-1990");
-		//incorrect input: incorrect date format
-		Person badExample5 = new Person("26d###svrQ", "john", "23|malvern road|malvern|Victoria|Australia", "23/05/1990");
-
-		// System.out.println(example.addPerson());
-		// System.out.println(badExample1.addPerson());
-		// System.out.println(badExample2.addPerson());
-		// System.out.println(badExample3.addPerson());
-		// System.out.println(badExample4.addPerson());
-		// System.out.println(badExample5.addPerson());
-		String offenceDate1 = "23-04-2025";
-		String offenceDate2 = "12-03-2024";
-		int demerit1 = 3;
-		int demerit2 = 4;
-		System.out.println(example.addDemeritPoints(offenceDate1, demerit1));
-		System.out.println(example.addDemeritPoints(offenceDate2, demerit2));
-		SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
-		for (Map.Entry<Date, Integer> entry : example.getDemeritPoints().entrySet()) {
-                String formattedDate = sdf.format(entry.getKey());
-                int points = entry.getValue();
-                System.out.println(formattedDate + ": " + points);
-            }
-
+		Person example = new Person("26d#w@fvRQ", "john", "23|malvern road|malvern|Victoria|Australia", "23-05-2009");
+		
+		example.printPersonalDetails();
+		System.out.println("");
+		example.updatePersonalDetails( "26d#w@fvRQ", "john", "23|malvern road|malvern|Victoria|Australia", "23-06-2009");
+		example.printPersonalDetails();
 	}
 }
