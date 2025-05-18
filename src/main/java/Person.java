@@ -2,6 +2,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Calendar;
 import java.util.Date;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
@@ -26,6 +28,27 @@ public class Person {
 		System.out.println(this.firstname);
 		System.out.println(this.address);
 		System.out.println(this.birthdate);
+	}
+	public void writeToFile(){
+		try{
+			BufferedWriter writer = new BufferedWriter(new FileWriter("person.txt"));
+			String id = this.getID();
+			String name = this.getName();
+			String address = this.getAddress();
+			String birthdate = this.getBirthdate();
+			writer.write(id);
+			writer.newLine();
+			writer.write(name);
+			writer.newLine();
+			writer.write(address);
+			writer.newLine();
+			writer.write(birthdate);
+			writer.newLine();
+			writer.close();
+			System.out.println("Person written to file success!");
+		}catch (Exception e){
+			System.out.println("Error writing file!");
+		}
 	}
 	
 	public void setID(String newID) {
@@ -86,7 +109,6 @@ public class Person {
 			}
 		}
 		if (counter >= 2) {
-			System.out.println(counter);
 			return true;	
 		}
 		else{
@@ -206,7 +228,7 @@ public class Person {
 		}
 		
 		//if this line is reached, all checks passed
-		System.out.println("date format correct");
+		//System.out.println("date format correct");
 		return  true;
 	}
 
@@ -274,20 +296,23 @@ public class Person {
 		//TODO: method adds information about a person to a .txt file
 		//After meeting conditions, write to a .txt file and return true.
 		//otherwise, don't write to file and return false.
-		
+		boolean canAddPerson = false;
 		if(this.personID.length() == 10) {
-			System.out.println("Id is correct length");
 			if(this.getName().isEmpty()){
 				System.out.println("name is empty");
-				return false;
+				return canAddPerson;
 			}
 			if(isValidID(this.getID()) && isValidAddressFormat(this.getAddress()) && isValidDateFormat(this.getBirthdate()) ) {
 				//TODO: write to a file
-				return true;
+				canAddPerson = true;
+				System.out.println("");
+				System.out.println("Person can be added: " + canAddPerson);
+				this.writeToFile();
+				return canAddPerson;
 			}
 		}
-		System.out.println("Not all checks passed");
-		return false;
+		System.out.println("Not all checks passed, cannot add person: " + canAddPerson);
+		return canAddPerson;
 		
 	}	
 	public boolean canChangeAddress(){
@@ -381,11 +406,12 @@ public class Person {
 
 	public static void main(String[] args) {
 		//good input should return true
-		Person example = new Person("26d#w@fvRQ", "john", "23|malvern road|malvern|Victoria|Australia", "23-05-2009");
-		
+		Person example = new Person("36d#w@fvRQ", "mat", "23|malvern road|malvern|Victoria|Australia", "23-05-2009");
+		example.addPerson();
+
 		example.printPersonalDetails();
 		System.out.println("");
-		example.updatePersonalDetails( "26d#w@fvRQ", "john", "23|malvern road|malvern|Victoria|Australia", "23-06-2009");
+		example.updatePersonalDetails( "26d#w@fvRQ", "john", "23|malvern road|malvern|Victoria|Australia", "23-05-2009");
 		example.printPersonalDetails();
 	}
 }
