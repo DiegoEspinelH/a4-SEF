@@ -128,7 +128,7 @@ public class Person {
 
 	public boolean isSpecialChar3to8(String id){
 		//make a string containing special characters
-		String specialChars = "!@#$%^&-_+=<>/";
+		String specialChars = "!@#$%^&*():;\\{}[]\"'.,`~-_+=<>?/";
 		int counter = 0;
 		for(int i = 2; i <=7; i++){
 			//check if a character matches with special characters string at given indexes
