@@ -1,12 +1,12 @@
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Calendar;
-import java.util.Date;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Person {
 	private String personID;
@@ -466,14 +466,18 @@ public class Person {
 			//if this line is reached, all checks were done
 			//write to the txt file the valid points and date of occurrences
 			this.writeDemeritPointsToFile();
-			return "Success!";
+			return "Success";
 		}
 	}
 
-
+	
 	public static void main(String[] args) {
 		//Code was written in main to make developing checks
 		//As checks were implemented, the code was deleted
 		//TODO: write tests to check conditions
+		
+		Person correctInput = new Person("73@#!#abPA", "james", "24|melbourne street|melbourne|Victoria|Australia", "25-05-2001");
+		correctInput.writeDetailsToFile();
+		
 	}
 }
